@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+          crossorigin="anonymous">
+    <title>Digital House</title>
+</head>
+<style>
+    legend {
+        text-align: left;
+    }
+    .border{
+        border: 1px solid #A02422;
+        margin:30px;
+    }
+    .row{
+        margin:20px;
+    }
+    body {
+    }
+    .starter-template {
+        padding: 3rem 1.5rem;
+        text-align: center;
+        padding-top: 2rem;
+    }
+</style>
+<body>
+<nav class="navbar navbar-expand-sm bg-dark navbar-blue">
+    <ul class="navbar-nav">
+        <li class="nav-item">
+            <a class="nav-link" href="#">Inicio</a>
+        </li>
+        <li class="nav-item active">
+            <a class="nav-link" href="#">Calculo de prestamos</a>
+        </li>
+    </ul>
+</nav>
+
+    <div class="container starter-templat">
+        <h3>Calculo de prestamos</h3>
+        <p>Calculo de Prestamos - Para el calculo de prestamos, esta calculadora le permite calcular la cuota
+            mensual a pagar por su prestamo, asi como el total de intereses.</p>
+<form id="form" name="form">
+        <fieldset class="border">
+            <legend>Calculo de Prestamos</legend>
+        <div class="row">
+            <div class="col-2">Importe</div>
+            <div class="col-2 "><input type="text" name="importe" id="importe"></div>
+        </div>
+        <div class="row">
+            <div class="col-2">Provincia</div>
+            <div class="col-2 "><select name="provincia" id="provincia"></select></div>
+        </div>
+        <div class="row">
+            <div class="col-2">Tasa de interes</div>
+            <div class="col-10 second"><input type="text" name="tasa" id="tasa"></div>
+        </div>
+        <div class="row">
+            <div class="col-2">
+            <button name="calcular" id="calcular" class="btn btn-primary">Calcular</button></div>
+                <div class="col-2">
+            <button name="borrar" id="borrar" class="btn btn-primary">Borrar</button></div>
+        </div>
+        <div class="row">
+            <div class="col-2">Cuota mensual</div>
+            <div class="col-2 second"><input type="text" name="cuota" id="cuota" readonly></div>
+        </div>
+        <div class="row">
+            <div class="col-2">Total a pagar</div>
+            <div class="col-10 second"><input type="text" name="total" id="total" readonly></div>
+        </div>
+        </fieldset>
+    </div>
+</form>
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+
+<script>
+
+    let dropdown = document.getElementById('provincia');
+    dropdown.length = 0;
+
+    let defaultOption = document.createElement('option');
+    defaultOption.text = 'Provincia';
+
+    dropdown.add(defaultOption);
+    dropdown.selectedIndex = 0;
+
+    const url = 'https://raw.githubusercontent.com/dariosus/jsonProvincias/master/provincias.json';
+
+    const request = new XMLHttpRequest();
+    request.open('GET', url, true);
+
+    request.onload = function() {
+        if (request.status === 200) {
+            const data = JSON.parse(request.responseText);
+            let option;
+            for (let i = 0; i < data.length; i++) {
+                option = document.createElement('option');
+                option.text = data[i].state;
+                option.value = data[i].state;
+                dropdown.add(option);
+            }
+        } else {
+            // Reached the server, but it returned an error
+        }
+    }
+
+    request.onerror = function() {
+        console.error('Error' + url);
+    };
+
+    request.send();
+
+
+
+    (function($) {
+        $.fn.calculate = function(options) {
+            var defaults = {
+                params: {}
+            };
+            options = $.extend(defaults, options);
+
+            var calculate = function(params) {
+                params = $.extend({
+                    importe: 0,
+                    tasa: 0
+                }, params);
+
+                var N = 12;
+                var I = (params.tasa / 100) / 12;
+
+                var v = Math.pow((1 + I), N);
+                var t = (I * v) / (v - 1);
+                var result = params.importe * t;
+
+                return result;
+
+            };
+
+            return this.each(function() {
+                //var $element = $(this);
+                var $result = calculate(options.params);
+                //var output = '<p>'+ $result.toFixed(2) + '</p>';
+
+                $('#cuota').val($result.toFixed(2));
+                $('#total').val($result.toFixed(2)*12);
+                alert(1);
+            });
+
+        };
+
+    })(jQuery);
+
+    $(function() {
+        $("#calcular").click( function(e) {
+            e.preventDefault();
+            var $params = {
+                importe: $('#importe').val(),
+                tasa: $('#tasa').val()
+            };
+
+            $(this).calculate({
+                params: $params
+            })
+
+        });
+
+        $('#borrar').click(function(e){
+            e.preventDefault();
+            $('#form')[0].reset();
+        });
+
+
+    });
+
+
+
+</script>
+</body>
+</html>
